@@ -51,6 +51,21 @@ The Scythe, Snow Shovel and Fishing Hat are off too (crafted in the Mountain, As
 
 From level 4 (the usual maximum at a workbench or forge) to 25 takes 71 idols. Upgrading at a normal station, with materials, still works as before. It makes a new item, so it also empties the bar.
 
+### Crafting idols
+
+Besides finding them, idols can be crafted from the tier's boss item and a trophy of the next tier, at the best station that tier reaches just after its boss. Bloodgold has no next tier, so it takes a rare Ashlands trophy (they drop 5% of the time). A recipe shows up once you have picked up both ingredients and seen the station at that level. Each craft takes one trophy and makes one idol (`IdolRecipes.cs`).
+
+| Idol | Station | Boss item per idol (per kill) | Battle idol | Protection idol |
+|---|---|---|---|---|
+| Wooden | Workbench 3 | 1 Hard Antler (3) | Troll Trophy | Greydwarf Shaman Trophy |
+| Bronze | Forge 3 | 1 Swamp Key (1 per player) | Draugr Elite Trophy | Abomination Trophy |
+| Iron | Forge 7 | 1 Wishbone (1 per player) | Drake Trophy | Wolf Trophy |
+| Silver | Artisan Table 1 | 5 Dragon Tears (10) | Deathsquito Trophy | Lox Trophy |
+| Black Metal | Forge 7 | 1 Torn Spirit (3) | Gjall Trophy | Hare Trophy |
+| Black Marble | Black Forge 3 | 2 Majestic Carapaces (5) | Bonemaw Trophy | Asksvin Trophy |
+| Flametal | Black Forge 5 | 2 Kindled Ribs (5) | Barka Trophy | Krigen Trophy |
+| Bloodgold | Black Forge 6 | 1 Crown Jewel (1) | Fallen Valkyrie Trophy | Morgen Trophy |
+
 ### Settings
 
 `BepInEx/config/melichor.ValheimFOPReworked.cfg` is created on the first start. The experience rates are first guesses that need playing to tune.
