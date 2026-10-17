@@ -1,0 +1,25 @@
+# Everything setup.sh downloads or generates (BepInEx, ilspycmd, the decompiled game code)
+/deps/
+# The local game path, written by setup.sh
+/Environment.props
+
+# Build output
+bin/
+obj/
+/dist/
+
+# IDEs
+.vs/
+.idea/
+*.user
+*.suo
+*.DotSettings.user
+
+# Valheim saves (characters and worlds), in case one is copied here for testing
+*.fch
+*.fch.old
+*.fch.new
+*.db
+*.db.old
+*.fwl
+*.fwl.old

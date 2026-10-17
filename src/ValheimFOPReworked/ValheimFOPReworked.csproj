@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- ValheimDir: this machine's Valheim install, written by setup.sh. It can also be given with -p:ValheimDir=... -->
+  <Import Project="..\..\Environment.props" Condition="Exists('..\..\Environment.props')" />
+
+  <PropertyGroup>
+    <!-- Compiled against the base libraries the game ships (referenced below), not the .NET reference set -->
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <AssemblyName>ValheimFOPReworked</AssemblyName>
+    <RootNamespace>ValheimFOPReworked</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <!-- Needed to use the members the publicizer makes public -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <ManagedDir>$(ValheimDir)/valheim_Data/Managed/</ManagedDir>
+    <BepInExCoreDir>$(MSBuildThisFileDirectory)../../deps/BepInExPack_Valheim/BepInEx/core/</BepInExCoreDir>
+    <PluginDeployDir>$(ValheimDir)/BepInEx/plugins/$(AssemblyName)/</PluginDeployDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Makes the game's private members public at compile time -->
+    <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="mscorlib" HintPath="$(ManagedDir)mscorlib.dll" Private="false" />
+    <Reference Include="netstandard" HintPath="$(ManagedDir)netstandard.dll" Private="false" />
+    <Reference Include="System" HintPath="$(ManagedDir)System.dll" Private="false" />
+    <Reference Include="System.Core" HintPath="$(ManagedDir)System.Core.dll" Private="false" />
+    <Reference Include="BepInEx" HintPath="$(BepInExCoreDir)BepInEx.dll" Private="false" />
+    <Reference Include="0Harmony" HintPath="$(BepInExCoreDir)0Harmony.dll" Private="false" />
+    <Reference Include="assembly_valheim" HintPath="$(ManagedDir)assembly_valheim.dll" Private="false" Publicize="true" />
+    <Reference Include="assembly_utils" HintPath="$(ManagedDir)assembly_utils.dll" Private="false" Publicize="true" />
+    <Reference Include="assembly_guiutils" HintPath="$(ManagedDir)assembly_guiutils.dll" Private="false" />
+    <Reference Include="UnityEngine" HintPath="$(ManagedDir)UnityEngine.dll" Private="false" />
+    <Reference Include="UnityEngine.CoreModule" HintPath="$(ManagedDir)UnityEngine.CoreModule.dll" Private="false" />
+    <Reference Include="UnityEngine.UI" HintPath="$(ManagedDir)UnityEngine.UI.dll" Private="false" />
+    <Reference Include="Unity.TextMeshPro" HintPath="$(ManagedDir)Unity.TextMeshPro.dll" Private="false" />
+  </ItemGroup>
+
+  <Target Name="CheckSetup" BeforeTargets="PrepareForBuild">
+    <Error Condition="'$(ValheimDir)' == '' Or !Exists('$(ManagedDir)assembly_valheim.dll')"
+           Text="Valheim was not found (ValheimDir='$(ValheimDir)'). Run ./setup.sh first." />
+    <Error Condition="!Exists('$(BepInExCoreDir)BepInEx.dll')" Text="BepInEx is missing from deps/. Run ./setup.sh first." />
+  </Target>
+
+  <!-- dotnet build -p:Deploy=true copies the plugin into the game's BepInEx/plugins -->
+  <Target Name="DeployToGame" AfterTargets="Build" Condition="'$(Deploy)' == 'true'">
+    <Error Condition="!Exists('$(ValheimDir)/BepInEx/core/BepInEx.dll')"
+           Text="BepInEx is not installed in the game. Run ./setup.sh --install-bepinex first." />
+    <Copy SourceFiles="$(TargetPath);$(TargetDir)$(TargetName).pdb" DestinationFolder="$(PluginDeployDir)" />
+    <Message Importance="high" Text="Deployed to $(PluginDeployDir)" />
+  </Target>
+
+</Project>
