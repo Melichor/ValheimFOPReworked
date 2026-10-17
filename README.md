@@ -163,8 +163,23 @@ On Windows, run `build.bat` instead; it takes the same options. It builds the pl
 | `--debug` | Build the Debug configuration instead of Release. |
 | `--deploy` | Also copy the plugin into the game's `BepInEx/plugins/ValheimFOPReworked/`. BepInEx has to be installed in the game (`./setup.sh --install-bepinex`). |
 | `--no-check` | Skip the patch check. |
+| `--package` | Also make `dist/ForgeOfPotentialReworked-<version>.zip`, ready to install (see below). |
 
 `build.sh` and `build.bat` only run `tools/build.py`, which runs `dotnet build`; plain `dotnet build` works too. The plugin is compiled against the game's own assemblies, from your install. The private members of `assembly_valheim`, `assembly_utils` and `assembly_guiutils` are made public at compile time (BepInEx.AssemblyPublicizer), so patches can use them directly.
+
+### The package
+
+`./build.sh --package` makes the zip that Thunderstore and mod managers (r2modman, Thunderstore Mod Manager, Gale) install, in Thunderstore's layout:
+
+| File | From |
+|---|---|
+| `manifest.json` | The name, description and website in `tools/build.py`, the version from `Plugin.Version` in `Plugin.cs`, and BepInExPack_Valheim as a dependency (the version `setup.py` pins) |
+| `README.md` | This README from the top to just before "Requirements", the part for players |
+| `icon.png` | `package/icon.png`, 256x256, exported from `package/icon.xcf`, the icon's source. Edit the `.xcf` in GIMP (each part is its own layer), then run `package/export-icon.sh`, which exports it with GIMP. The current icon is a placeholder. |
+| `CHANGELOG.md` | `package/CHANGELOG.md`, if there is one |
+| `plugins/ValheimFOPReworked.dll` | The Release build |
+
+To release a new version, raise `Plugin.Version` (three numbers, like 0.2.0) and package again. To install the zip without a mod manager, copy `plugins/ValheimFOPReworked.dll` into the game's `BepInEx/plugins/ValheimFOPReworked/`.
 
 ## Running the mod
 
@@ -189,9 +204,11 @@ dotnet run --project tools/PatchCheck
 | `src/ValheimFOPReworked/` | The plugin |
 | `setup.sh`, `setup.bat`, `tools/setup.py` | The setup script |
 | `build.sh`, `build.bat`, `tools/build.py` | The build script |
+| `package/` | The package's icon (`icon.xcf` is its source, `export-icon.sh` exports it) and changelog |
 | `tools/PatchCheck/` | Checks the patches against the installed game |
 | `src/ValheimFOPReworked/Translations/` | The mod's text, per language |
 | `deps/`, `Environment.props` | Made by the setup, not committed |
+| `dist/` | Made by `--package`, not committed |
 
 ## Notes on the game code
 
