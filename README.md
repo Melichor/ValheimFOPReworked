@@ -37,7 +37,19 @@ The experience an item needs grows with its level and with its tier. Experience 
 | 6 Ashlands | 1.6 | 12,800 | 188,122 | 1,886,520 |
 | 7 Deep North | 4 | 32,000 | 470,304 | 4,716,300 |
 
-An item's tier is the tier of the idol its recipe takes. A few recipes take idols two or more tiers away from where the item is crafted (the Nord Atgeir takes bronze idols); for those the experience follows the crafting biome (`TierCorrections` in `ItemXp.cs`), while the idols stay the game's. From level 4 (the usual maximum at a workbench or forge) to 25 takes 71 idols. Upgrading at a normal station, with materials, still works as before. It makes a new item, so it also empties the bar.
+An item's tier is the tier of the idol its recipe takes. In the game, a few recipes take idols two or more tiers away from where the item is crafted; most look copied from an earlier recipe. The mod gives these items the idols of their crafting biome, of the same kind (battle or protection), and the experience follows that tier too (`IdolFixes.cs`):
+
+| Item | Idol tier in the game | With the mod |
+|---|---|---|
+| Nord Atgeir | 1 Black Forest | 7 Deep North |
+| Nord Knucklechains | 2 Swamp | 7 Deep North |
+| Nord Axe, Frostfire Axe | 4 Plains | 7 Deep North |
+| Headdress of the Bear | 5 Mistlands | 1 Black Forest |
+| Early Axes | 2 Swamp | 0 Meadows |
+
+The Scythe, Snow Shovel and Fishing Hat are off too (crafted in the Mountain, Ashlands and Deep North), but keep the game's Meadows and Black Forest idols: they are tools more than gear.
+
+From level 4 (the usual maximum at a workbench or forge) to 25 takes 71 idols. Upgrading at a normal station, with materials, still works as before. It makes a new item, so it also empties the bar.
 
 ### Settings
 

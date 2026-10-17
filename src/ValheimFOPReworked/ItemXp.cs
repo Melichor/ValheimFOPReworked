@@ -15,7 +15,7 @@ namespace ValheimFOPReworked
         private const string Key = "melichor.ValheimFOPReworked.xp";
 
         // The items the Forge of Potential refines, by name, with their tier: the tier of the idol their recipe takes
-        // (-1 when the idol does not say), apart from the TierCorrections. An item is refinable when its recipe has an
+        // (-1 when the idol does not say), or the one IdolFixes gives them. An item is refinable when its recipe has an
         // upgrader (idol) requirement and it has levels at all: the Forge skips items whose maximum quality is 1.
         private static readonly Dictionary<string, int> s_tiers = new Dictionary<string, int>();
         private static ObjectDB s_tiersDb;
@@ -24,22 +24,6 @@ namespace ValheimFOPReworked
         // The game's idols are named "$item_upgrader_tier3 ..." (prefab Upgrader3Weapon): 0 Meadows to 7 Deep North
         private static readonly Regex TierInName = new Regex(@"tier(\d+)", RegexOptions.IgnoreCase);
         private static readonly Regex TierInPrefab = new Regex(@"^Upgrader(\d+)", RegexOptions.IgnoreCase);
-
-        // Items whose recipe takes idols two or more tiers away from the biome they are crafted in. Most look copied from
-        // an earlier recipe (the Nord Atgeir takes bronze idols). The experience they need follows the biome instead;
-        // the idols they take stay the game's. Found by comparing every recipe's idol with its item's crafting biome.
-        private static readonly Dictionary<string, int> TierCorrections = new Dictionary<string, int>
-        {
-            { "$item_scythe", 3 }, // Scythe: idol tier 0, crafted in the Mountain
-            { "$item_snowshovel", 6 }, // Snow Shovel: idol tier 0, crafted in the Ashlands
-            { "$item_atgeir_gold", 7 }, // Nord Atgeir: idol tier 1, crafted in the Deep North
-            { "$item_helmet_fishinghat", 7 }, // Fishing Hat: idol tier 1, crafted in the Deep North
-            { "$item_helmet_berserker", 1 }, // Headdress of the Bear: idol tier 5, crafted in the Black Forest
-            { "$item_axe_early", 0 }, // Early Axes: idol tier 2, crafted in the Meadows
-            { "$item_fistweapon_gold", 7 }, // Nord Knucklechains: idol tier 2, crafted in the Deep North
-            { "$item_axe_gold", 7 }, // Nord Axe: idol tier 4, crafted in the Deep North
-            { "$item_axe_gold_frostfire", 7 }, // Frostfire Axe: idol tier 4, crafted in the Deep North
-        };
 
         private static string s_scaleText;
         private static float[] s_scales = new float[0];
@@ -62,7 +46,7 @@ namespace ValheimFOPReworked
                         if (requirement.m_upgraderResource && requirement.m_resItem)
                         {
                             string name = recipe.m_item.m_itemData.m_shared.m_name;
-                            s_tiers[name] = TierCorrections.TryGetValue(name, out int tier)
+                            s_tiers[name] = IdolFixes.Tiers.TryGetValue(name, out int tier)
                                 ? tier
                                 : IdolTier(requirement.m_resItem);
                             break;
@@ -74,6 +58,10 @@ namespace ValheimFOPReworked
             }
             return s_tiers;
         }
+
+        /// <summary>The name of the same kind of idol (battle or protection) of another tier.</summary>
+        public static string WithTier(string idolName, int tier) =>
+            TierInName.Replace(idolName, "tier" + tier.ToString(CultureInfo.InvariantCulture), 1);
 
         private static int IdolTier(ItemDrop idol)
         {

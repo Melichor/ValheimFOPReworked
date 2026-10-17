@@ -1,4 +1,5 @@
 using BepInEx;
+using BepInEx.Logging;
 using HarmonyLib;
 using ValheimFOPReworked.Patches;
 
@@ -11,10 +12,13 @@ namespace ValheimFOPReworked
         public const string Name = "Forge of Potential Reworked";
         public const string Version = "0.1.0";
 
+        internal static ManualLogSource Log;
+
         private readonly Harmony _harmony = new Harmony(Guid);
 
         private void Awake()
         {
+            Log = Logger;
             Settings.Bind(Config);
             _harmony.PatchAll(typeof(Plugin).Assembly);
             Logger.LogInfo($"{Name} {Version} loaded");
