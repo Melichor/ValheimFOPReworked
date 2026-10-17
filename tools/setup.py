@@ -33,7 +33,7 @@ BEPINEX_SHA256 = "bce631497976a93977ceb08e166712e6c31d15244956f89f17df092a9b62e2
 BEPINEX_URL = "https://thunderstore.io/package/download/denikson/BepInExPack_Valheim/{version}/"
 ILSPYCMD_VERSION = "11.1.0.9782"
 # Game assemblies that are decompiled into deps/decompiled/ to read the game's code
-DECOMPILE = ["assembly_valheim", "assembly_utils"]
+DECOMPILE = ["assembly_valheim", "assembly_utils", "assembly_guiutils"]
 VALHEIM_APP_ID = 892970
 # Where Steam keeps libraryfolders.vdf: native Linux, the Debian/Ubuntu package, Flatpak, Windows
 STEAM_ROOTS = [

@@ -32,7 +32,7 @@ namespace ValheimFOPReworked.Patches
                     HitData resisted = hit.Clone();
                     resisted.ApplyResistance(modifiers, out _);
                     float damage = resisted.m_damage.m_chop + resisted.m_damage.m_pickaxe;
-                    ItemXp.Add(tool, damage * Settings.ResourceXp.Value);
+                    ItemXp.Earn(tool, damage * Settings.ResourceXp.Value);
                 }
                 return true;
             }
@@ -170,7 +170,7 @@ namespace ValheimFOPReworked.Patches
                     return;
                 }
                 float cost = __instance.m_attackEitr + __instance.m_attackHealth;
-                ItemXp.Add(weapon, cost * Settings.CastXp.Value);
+                ItemXp.Earn(weapon, cost * Settings.CastXp.Value);
             }
         }
     }

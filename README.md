@@ -68,7 +68,7 @@ Besides finding them, idols can be crafted from the tier's boss item and a troph
 
 ### Settings
 
-`BepInEx/config/melichor.ValheimFOPReworked.cfg` is created on the first start. The experience rates are first guesses that need playing to tune.
+`BepInEx/config/melichor.ValheimFOPReworked.cfg` is created on the first start. Edits to the file apply while the game runs. The experience rates are first guesses that need playing to tune.
 
 | Setting | Default | Meaning |
 |---|---|---|
@@ -84,9 +84,27 @@ Besides finding them, idols can be crafted from the tier's boss item and a troph
 | `ToolUseXp` | 20 | Build tools, scythe, snow shovel, per use, times the tool's tier multiplier, so every tool needs the same number of uses. |
 | `CastXp` | 2 | Staffs that deal no damage, per point of eitr or health a cast costs. |
 
+All experience earned by playing is also multiplied by the world's resource rate (the "Resources" world setting, which scales drops), so a world set to more resources levels items faster too.
+
 ### Multiplayer
 
-Everyone should have the mod. A creature is simulated on one player's machine, and that machine works out the damage and tells the attacker. Without the mod there, hits on its creatures give no weapon experience. The settings are read on each machine and are not sent from the server.
+Everyone should have the mod, in the same version. A creature is simulated on one player's machine, and that machine works out the damage and tells the attacker. Without the mod there, hits on its creatures give no weapon experience.
+
+The server's settings apply to everyone: it sends them as it lets a player in, and again whenever they change, so editing the server's config file takes effect without a restart. A player's own config file applies again in single player and when they host.
+
+### Existing items
+
+Items refined above level 25 before the mod (with the game's gamble) keep their level. They gain no experience and cannot be refined further.
+
+### Compatibility
+
+Other Forge of Potential mods that change the refinement roll do not work with this one, which replaces the roll altogether. BepInEx does not load this mod next to these: Potential Reforged (Dyls123), JGFoP (JGSTUDIOS), OdinBet Forge of Potential (Igao), ForgeRework (MerlinofMines), Reforged Potential (Akuichi), MySix Forge of Potential (MysixValheimMods), Forge of Potential Redux (Dreich), Wire's Forge of Goodtential (Wire), Forge Odds (Sansara), Forge of True Potential (beijing_carlo) and Potential Draught (LOSDC). Any other mod that patches the refinement is named in a warning in `BepInEx/LogOutput.log` at start.
+
+Mods that only add ways to get idols (from bosses, enemies, trophies, or by downgrading them) work alongside it. Sure Potential (TeflonTed) can stay installed too: it only makes the game's roll always succeed, and this mod has no roll.
+
+### Translations
+
+The mod's text is in `src/ValheimFOPReworked/Translations/<Language>.json`, built into the plugin. To add a language, copy `English.json` to the game's name for it (`Czech.json`, `German.json`, ...) and translate the values; the game fills in `$1` and `$2`. Words missing from a language show in English.
 
 ### Testing
 
@@ -106,7 +124,7 @@ It finds Valheim in your Steam libraries and gets everything else the build need
 |---|---|
 | BepInExPack_Valheim (pinned version, checked against its sha256), for building and for installing into the game | `deps/BepInExPack_Valheim/` |
 | ilspycmd, the ILSpy decompiler | `deps/tools/` |
-| The game's code (`assembly_valheim.dll`, `assembly_utils.dll`), decompiled to read and search | `deps/decompiled/` |
+| The game's code (`assembly_valheim.dll`, `assembly_utils.dll`, `assembly_guiutils.dll`), decompiled to read and search | `deps/decompiled/` |
 | The path of your Valheim install | `Environment.props` |
 
 | Option | Meaning |
@@ -123,7 +141,7 @@ It finds Valheim in your Steam libraries and gets everything else the build need
 dotnet build
 ```
 
-The plugin is compiled against the game's own assemblies, from your install. The private members of `assembly_valheim` and `assembly_utils` are made public at compile time (BepInEx.AssemblyPublicizer), so patches can use them directly.
+The plugin is compiled against the game's own assemblies, from your install. The private members of `assembly_valheim`, `assembly_utils` and `assembly_guiutils` are made public at compile time (BepInEx.AssemblyPublicizer), so patches can use them directly.
 
 ## Running the mod
 
@@ -148,6 +166,7 @@ dotnet build && dotnet run --project tools/PatchCheck
 | `src/ValheimFOPReworked/` | The plugin |
 | `setup.sh`, `tools/setup.py` | The setup script |
 | `tools/PatchCheck/` | Checks the patches against the installed game |
+| `src/ValheimFOPReworked/Translations/` | The mod's text, per language |
 | `deps/`, `Environment.props` | Made by the setup, not committed |
 
 ## Notes on the game code

@@ -100,7 +100,7 @@ namespace ValheimFOPReworked.Patches
             {
                 return;
             }
-            ItemXp.Add(weapon, damage * Settings.DamageXp.Value + killedMaxHealth * Settings.KillXp.Value);
+            ItemXp.Earn(weapon, damage * Settings.DamageXp.Value + killedMaxHealth * Settings.KillXp.Value);
             if (killedMaxHealth > 0f)
             {
                 s_lastWeapon.Remove(target);

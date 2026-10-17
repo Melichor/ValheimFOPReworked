@@ -127,10 +127,20 @@ namespace ValheimFOPReworked
         {
             if (CanEarn(item))
             {
-                Add(item, Settings.ToolUseXp.Value * TierScale(item));
+                Earn(item, Settings.ToolUseXp.Value * TierScale(item));
             }
         }
 
+        /// <summary>
+        /// Experience earned by playing. The world's resource rate (a world setting, also what scales drops) scales it,
+        /// so a world with more resources levels items faster too.
+        /// </summary>
+        public static void Earn(ItemDrop.ItemData item, float amount)
+        {
+            Add(item, amount * Game.m_resourceRate);
+        }
+
+        /// <summary>Adds exactly this much experience, up to what the current level needs.</summary>
         public static void Add(ItemDrop.ItemData item, float amount)
         {
             if (amount <= 0f || !CanEarn(item))

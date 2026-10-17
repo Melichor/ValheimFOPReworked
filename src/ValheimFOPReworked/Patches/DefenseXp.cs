@@ -33,10 +33,10 @@ namespace ValheimFOPReworked.Patches
                                Game.instance.GetDifficultyDamageScalePlayer(player.transform.position) *
                                Game.m_enemyDamageRate;
                 float xp = damage * Settings.ArmorXp.Value;
-                ItemXp.Add(player.m_helmetItem, xp);
-                ItemXp.Add(player.m_chestItem, xp);
-                ItemXp.Add(player.m_legItem, xp);
-                ItemXp.Add(player.m_shoulderItem, xp);
+                ItemXp.Earn(player.m_helmetItem, xp);
+                ItemXp.Earn(player.m_chestItem, xp);
+                ItemXp.Earn(player.m_legItem, xp);
+                ItemXp.Earn(player.m_shoulderItem, xp);
             }
         }
 
@@ -80,7 +80,7 @@ namespace ValheimFOPReworked.Patches
                 if (blocked > 0f)
                 {
                     float xp = blocked * Settings.BlockXp.Value * (__state.Parry ? Settings.ParryMultiplier.Value : 1f);
-                    ItemXp.Add(__state.Shield, xp);
+                    ItemXp.Earn(__state.Shield, xp);
                 }
             }
         }

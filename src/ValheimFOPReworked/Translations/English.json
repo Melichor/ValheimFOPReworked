@@ -1,0 +1,12 @@
+{
+  "fopreworked_refine": "Refine",
+  "fopreworked_not_enough_xp": "Not enough experience",
+  "fopreworked_max_level": "Maximum level reached",
+  "fopreworked_ready": "$1 is ready for the Forge of Potential",
+  "fopreworked_xp": "Experience",
+  "fopreworked_xp_max": "maximum level",
+  "fopreworked_xp_full": "full, ready for the Forge of Potential",
+  "fopreworked_refine_to": "Refine to level $1",
+  "fopreworked_xp_full_refine_to": "Experience full. Refine to level $1.",
+  "fopreworked_xp_progress": "Experience $1 / $2. Use it more to refine it."
+}

@@ -32,11 +32,17 @@
     <Reference Include="0Harmony" HintPath="$(BepInExCoreDir)0Harmony.dll" Private="false" />
     <Reference Include="assembly_valheim" HintPath="$(ManagedDir)assembly_valheim.dll" Private="false" Publicize="true" />
     <Reference Include="assembly_utils" HintPath="$(ManagedDir)assembly_utils.dll" Private="false" Publicize="true" />
-    <Reference Include="assembly_guiutils" HintPath="$(ManagedDir)assembly_guiutils.dll" Private="false" />
+    <Reference Include="assembly_guiutils" HintPath="$(ManagedDir)assembly_guiutils.dll" Private="false" Publicize="true" />
     <Reference Include="UnityEngine" HintPath="$(ManagedDir)UnityEngine.dll" Private="false" />
     <Reference Include="UnityEngine.CoreModule" HintPath="$(ManagedDir)UnityEngine.CoreModule.dll" Private="false" />
     <Reference Include="UnityEngine.UI" HintPath="$(ManagedDir)UnityEngine.UI.dll" Private="false" />
     <Reference Include="Unity.TextMeshPro" HintPath="$(ManagedDir)Unity.TextMeshPro.dll" Private="false" />
+    <Reference Include="Newtonsoft.Json" HintPath="$(ManagedDir)Newtonsoft.Json.dll" Private="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Built into the plugin as ValheimFOPReworked.Translations.<Language>.json -->
+    <EmbeddedResource Include="Translations\*.json" />
   </ItemGroup>
 
   <Target Name="CheckSetup" BeforeTargets="PrepareForBuild">
