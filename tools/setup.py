@@ -10,7 +10,8 @@ pinned version, or a game update for the decompiled code.
     ./setup.sh --no-decompile       skip ilspycmd and the decompiled game code
     ./setup.sh --install-bepinex    also copy BepInEx into the game folder, which is needed to run the mod
 
-The game path can also be given in the VALHEIM_INSTALL environment variable. Python 3, standard library only.
+On Windows, setup.bat takes the same options. The game path can also be given in the VALHEIM_INSTALL environment
+variable. Python 3, standard library only.
 ilspycmd needs the .NET 10 SDK (the same one that builds the mod).
 """
 import argparse
@@ -42,6 +43,10 @@ STEAM_ROOTS = [
     Path.home() / ".var" / "app" / "com.valvesoftware.Steam" / ".local" / "share" / "Steam",
     Path("C:/Program Files (x86)/Steam"),
 ]
+
+# How the scripts are run on this system, for the messages
+SETUP = "setup.bat" if os.name == "nt" else "./setup.sh"
+BUILD = "build.bat" if os.name == "nt" else "./build.sh"
 
 ROOT = Path(__file__).resolve().parent.parent
 DEPS = ROOT / "deps"
@@ -80,9 +85,22 @@ def is_game_dir(path):
 # The game install
 # ---------------------------------------------------------------------------------------------------------------
 
+def steam_roots():
+    """STEAM_ROOTS, after the folder the registry gives on Windows (Steam can be installed anywhere there)."""
+    roots = list(STEAM_ROOTS)
+    if os.name == "nt":
+        try:
+            import winreg
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Valve\Steam") as key:
+                roots.insert(0, Path(winreg.QueryValueEx(key, "SteamPath")[0]))
+        except OSError:
+            pass
+    return roots
+
+
 def find_in_steam():
     """The Valheim folder in the first Steam library that has the game installed, or None."""
-    for root in STEAM_ROOTS:
+    for root in steam_roots():
         vdf = root / "steamapps" / "libraryfolders.vdf"
         if not vdf.is_file():
             continue
@@ -245,7 +263,7 @@ def decompile(game):
 # ---------------------------------------------------------------------------------------------------------------
 
 def main():
-    ap = argparse.ArgumentParser(prog="setup.sh", description=__doc__.split("\n\n")[0],
+    ap = argparse.ArgumentParser(prog=SETUP.lstrip("./"), description=__doc__.split("\n\n")[0],
                                  epilog="Everything goes into deps/ and Environment.props, which git ignores.")
     ap.add_argument("--game", default=os.environ.get("VALHEIM_INSTALL"),
                     help="the Valheim install, the folder that contains valheim_Data "
@@ -266,11 +284,11 @@ def main():
         install_bepinex(game)
 
     print()
-    print("Ready. Build with:  dotnet build")
+    print(f"Ready. Build with:  {BUILD}")
     if not (game / "BepInEx" / "core" / "BepInEx.dll").is_file():
-        print("BepInEx is not installed in the game yet. To run the mod: ./setup.sh --install-bepinex")
+        print(f"BepInEx is not installed in the game yet. To run the mod: {SETUP} --install-bepinex")
     else:
-        print("Deploy the build into the game with:  dotnet build -p:Deploy=true")
+        print(f"Build and copy the plugin into the game with:  {BUILD} --deploy")
         if os.name != "nt":
             print("Steam launch options for the game (Properties > General):  ./start_game_bepinex.sh %command%")
 

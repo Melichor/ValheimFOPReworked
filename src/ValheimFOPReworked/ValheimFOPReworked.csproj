@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- ValheimDir: this machine's Valheim install, written by setup.sh. It can also be given with -p:ValheimDir=... -->
+  <!-- ValheimDir: this machine's Valheim install, written by setup.sh (setup.bat on Windows). It can also be given with -p:ValheimDir=... -->
   <Import Project="..\..\Environment.props" Condition="Exists('..\..\Environment.props')" />
 
   <PropertyGroup>
@@ -47,14 +47,14 @@
 
   <Target Name="CheckSetup" BeforeTargets="PrepareForBuild">
     <Error Condition="'$(ValheimDir)' == '' Or !Exists('$(ManagedDir)assembly_valheim.dll')"
-           Text="Valheim was not found (ValheimDir='$(ValheimDir)'). Run ./setup.sh first." />
-    <Error Condition="!Exists('$(BepInExCoreDir)BepInEx.dll')" Text="BepInEx is missing from deps/. Run ./setup.sh first." />
+           Text="Valheim was not found (ValheimDir='$(ValheimDir)'). Run setup.sh (setup.bat on Windows) first." />
+    <Error Condition="!Exists('$(BepInExCoreDir)BepInEx.dll')" Text="BepInEx is missing from deps/. Run setup.sh (setup.bat on Windows) first." />
   </Target>
 
   <!-- dotnet build -p:Deploy=true copies the plugin into the game's BepInEx/plugins -->
   <Target Name="DeployToGame" AfterTargets="Build" Condition="'$(Deploy)' == 'true'">
     <Error Condition="!Exists('$(ValheimDir)/BepInEx/core/BepInEx.dll')"
-           Text="BepInEx is not installed in the game. Run ./setup.sh --install-bepinex first." />
+           Text="BepInEx is not installed in the game. Run setup.sh --install-bepinex (setup.bat on Windows) first." />
     <Copy SourceFiles="$(TargetPath);$(TargetDir)$(TargetName).pdb" DestinationFolder="$(PluginDeployDir)" />
     <Message Importance="high" Text="Deployed to $(PluginDeployDir)" />
   </Target>

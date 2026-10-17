@@ -7,6 +7,8 @@
 bin/
 obj/
 /dist/
+# Python's bytecode cache, made when a tool script is imported
+__pycache__/
 
 # IDEs
 .vs/

@@ -110,13 +110,28 @@ The mod's text is in `src/ValheimFOPReworked/Translations/<Language>.json`, buil
 
 With `devcommands` on, the console command `fopxp` fills the bar of every equipped item (`fopxp clear` empties it, `fopxp 500` adds 500). The `nocost` cheat and the "no crafting cost" world setting refine without experience or idols.
 
-## Setup
+## Requirements
 
-You need Python 3, the .NET 10 SDK and Valheim from Steam. The setup and the build are tested on Linux with the native Linux game.
+To build the mod you need:
+
+| What | Why | Where to get it |
+|---|---|---|
+| Valheim, installed through Steam | The mod is compiled against the game's own files, so the game has to be on the machine that builds it. | Steam |
+| The .NET 10 SDK (`dotnet`) | Builds the mod, and runs the decompiler and the patch check. | [dotnet.microsoft.com](https://dotnet.microsoft.com/download/dotnet/10.0). Windows: `winget install Microsoft.DotNet.SDK.10`. Linux: your distribution's `dotnet-sdk-10.0` package, or Microsoft's package repository. |
+| Python 3.8 or newer | Runs the setup and build scripts. | Windows: [python.org](https://www.python.org/downloads/), whose installer also adds the `py` launcher the scripts use. Linux: usually installed already, otherwise the `python3` package. |
+| An internet connection, the first time | The setup downloads BepInEx (from Thunderstore) and the ILSpy decompiler, and the first build downloads two NuGet packages. | |
+
+Nothing else: no Visual Studio, Mono or Unity. Git is only needed to get the code.
+
+The scripts work on Linux and Windows. They are tested on Linux with the native Linux game; the Windows scripts (`setup.bat`, `build.bat`) do the same as the `.sh` ones but have not been run yet.
+
+## Setup
 
 ```bash
 ./setup.sh
 ```
+
+On Windows, run `setup.bat` instead; it takes the same options.
 
 It finds Valheim in your Steam libraries and gets everything else the build needs. Everything it downloads or generates goes into `deps/`, and the game path goes into `Environment.props`. Git ignores both. Running it again only redoes what is missing or out of date: a new pinned version, or a game update for the decompiled code.
 
@@ -133,30 +148,38 @@ It finds Valheim in your Steam libraries and gets everything else the build need
 | `--no-decompile` | Skip ilspycmd and the decompiled code. |
 | `--install-bepinex` | Also copy BepInEx into the game folder. This is needed to run the mod. An existing `BepInEx/config/BepInEx.cfg` is kept. |
 
-`setup.sh` only runs `tools/setup.py`, which you can also run directly with Python.
+`setup.sh` and `setup.bat` only run `tools/setup.py`, which you can also run directly with Python.
 
 ## Build
 
 ```bash
-dotnet build
+./build.sh
 ```
 
-The plugin is compiled against the game's own assemblies, from your install. The private members of `assembly_valheim`, `assembly_utils` and `assembly_guiutils` are made public at compile time (BepInEx.AssemblyPublicizer), so patches can use them directly.
+On Windows, run `build.bat` instead; it takes the same options. It builds the plugin (`src/ValheimFOPReworked/bin/Release/netstandard2.1/ValheimFOPReworked.dll`) and then checks its patches against the installed game (see [Checking the patches](#checking-the-patches)). It stops with an error if either fails.
+
+| Option | Meaning |
+|---|---|
+| `--debug` | Build the Debug configuration instead of Release. |
+| `--deploy` | Also copy the plugin into the game's `BepInEx/plugins/ValheimFOPReworked/`. BepInEx has to be installed in the game (`./setup.sh --install-bepinex`). |
+| `--no-check` | Skip the patch check. |
+
+`build.sh` and `build.bat` only run `tools/build.py`, which runs `dotnet build`; plain `dotnet build` works too. The plugin is compiled against the game's own assemblies, from your install. The private members of `assembly_valheim`, `assembly_utils` and `assembly_guiutils` are made public at compile time (BepInEx.AssemblyPublicizer), so patches can use them directly.
 
 ## Running the mod
 
-1. Install BepInEx into the game, once: `./setup.sh --install-bepinex`
-2. In Steam, set the game's launch options (Properties > General) to `./start_game_bepinex.sh %command%`
-3. Build and copy the plugin into `BepInEx/plugins/ValheimFOPReworked/`: `dotnet build -p:Deploy=true`
+1. Install BepInEx into the game, once: `./setup.sh --install-bepinex` (Windows: `setup.bat --install-bepinex`)
+2. On Linux only: in Steam, set the game's launch options (Properties > General) to `./start_game_bepinex.sh %command%`. On Windows, BepInEx starts with the game by itself.
+3. Build and copy the plugin into `BepInEx/plugins/ValheimFOPReworked/`: `./build.sh --deploy` (Windows: `build.bat --deploy`)
 
 BepInEx writes its log to `BepInEx/LogOutput.log` in the game folder.
 
 ## Checking the patches
 
-Harmony only finds a patch that no longer fits the game (a renamed method or argument) when the game loads the plugin. `tools/PatchCheck` finds it without starting the game. It reads the built plugin and the installed game as metadata and checks every patch against the method it patches. Run it after a game update:
+Harmony only finds a patch that no longer fits the game (a renamed method or argument) when the game loads the plugin. `tools/PatchCheck` finds it without starting the game. It reads the built plugin and the installed game as metadata and checks every patch against the method it patches. `./build.sh` runs it after every build, so after a game update a build is enough. On its own:
 
 ```bash
-dotnet build && dotnet run --project tools/PatchCheck
+dotnet run --project tools/PatchCheck
 ```
 
 ## Layout
@@ -164,7 +187,8 @@ dotnet build && dotnet run --project tools/PatchCheck
 | Path | What |
 |---|---|
 | `src/ValheimFOPReworked/` | The plugin |
-| `setup.sh`, `tools/setup.py` | The setup script |
+| `setup.sh`, `setup.bat`, `tools/setup.py` | The setup script |
+| `build.sh`, `build.bat`, `tools/build.py` | The build script |
 | `tools/PatchCheck/` | Checks the patches against the installed game |
 | `src/ValheimFOPReworked/Translations/` | The mod's text, per language |
 | `deps/`, `Environment.props` | Made by the setup, not committed |
