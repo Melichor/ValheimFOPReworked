@@ -49,6 +49,8 @@ An item's tier is the tier of the idol its recipe takes. In the game, a few reci
 
 The Scythe, Snow Shovel and Fishing Hat are off too (crafted in the Mountain, Ashlands and Deep North), but keep the game's Meadows and Black Forest idols: they are tools more than gear.
 
+The Helmet of the Protector has levels but no idol in the game, so the Forge never lists it, unlike the rest of its set. The mod gives it the same Bloodgold Protection idol as its breastplate and trousers.
+
 From level 4 (the usual maximum at a workbench or forge) to 25 takes 71 idols. Upgrading at a normal station, with materials, still works as before. It makes a new item, so it also empties the bar.
 
 ### Crafting idols
