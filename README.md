@@ -55,18 +55,18 @@ From level 4 (the usual maximum at a workbench or forge) to 25 takes 71 idols. U
 
 ### Crafting idols
 
-Besides finding them, idols can be crafted from the tier's boss item and a trophy of the next tier, at the best station that tier reaches just after its boss. Bloodgold has no next tier, so it takes a rare Ashlands trophy (they drop 5% of the time). A recipe shows up once you have picked up both ingredients and seen the station at that level. Each craft takes one trophy and makes one idol (`IdolRecipes.cs`).
+Besides finding them, idols can be crafted from the tier's boss item, a trophy of the next tier and 5 of the material the idol is named after, at the best station that tier reaches just after its boss. Bloodgold has no next tier, so it takes a rare Ashlands trophy (they drop 5% of the time). A recipe shows up once you have picked up all its ingredients and seen the station at that level. Each craft takes one trophy and makes one idol (`IdolRecipes.cs`).
 
-| Idol | Station | Boss item per idol (per kill) | Battle idol | Protection idol |
-|---|---|---|---|---|
-| Wooden | Workbench 3 | 1 Hard Antler (3) | Troll Trophy | Greydwarf Shaman Trophy |
-| Bronze | Forge 3 | 1 Swamp Key (1 per player) | Draugr Elite Trophy | Abomination Trophy |
-| Iron | Forge 7 | 1 Wishbone (1 per player) | Drake Trophy | Wolf Trophy |
-| Silver | Artisan Table 1 | 5 Dragon Tears (10) | Deathsquito Trophy | Lox Trophy |
-| Black Metal | Forge 7 | 1 Torn Spirit (3) | Gjall Trophy | Hare Trophy |
-| Black Marble | Black Forge 3 | 2 Majestic Carapaces (5) | Bonemaw Trophy | Asksvin Trophy |
-| Flametal | Black Forge 5 | 2 Kindled Ribs (5) | Barka Trophy | Krigen Trophy |
-| Bloodgold | Black Forge 6 | 1 Crown Jewel (1) | Fallen Valkyrie Trophy | Morgen Trophy |
+| Idol | Station | Boss item per idol (per kill) | Material | Battle idol | Protection idol |
+|---|---|---|---|---|---|
+| Wooden | Workbench 3 | 1 Hard Antler (3) | 5 Fine Wood | Troll Trophy | Greydwarf Shaman Trophy |
+| Bronze | Forge 3 | 1 Swamp Key (1 per player) | 5 Bronze | Draugr Elite Trophy | Abomination Trophy |
+| Iron | Forge 7 | 1 Wishbone (1 per player) | 5 Iron | Drake Trophy | Wolf Trophy |
+| Silver | Artisan Table 1 | 5 Dragon Tears (10) | 5 Silver | Deathsquito Trophy | Lox Trophy |
+| Black Metal | Forge 7 | 1 Torn Spirit (3) | 5 Black Metal | Gjall Trophy | Hare Trophy |
+| Black Marble | Black Forge 3 | 2 Majestic Carapaces (5) | 5 Black Marble | Bonemaw Trophy | Asksvin Trophy |
+| Flametal | Black Forge 5 | 2 Kindled Ribs (5) | 5 Flametal | Barka Trophy | Krigen Trophy |
+| Bloodgold | Black Forge 6 | 1 Crown Jewel (1) | 5 Bloodgold | Fallen Valkyrie Trophy | Morgen Trophy |
 
 ### Settings
 
