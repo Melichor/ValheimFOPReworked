@@ -5,11 +5,12 @@ using HarmonyLib;
 namespace ValheimFOPReworked
 {
     /// <summary>
-    /// A few recipes take idols two or more tiers away from the biome their item is crafted in. Most look copied from
-    /// an earlier recipe: the Nord Atgeir takes bronze idols. These items are refined with idols of the right tier
+    /// A few recipes take idols of another tier than the biome their item is crafted in. Most look copied from an
+    /// earlier recipe: the Nord Atgeir takes bronze idols. These items are refined with idols of the right tier
     /// instead, of the same kind (battle or protection), and the experience they need follows the same tier.
-    /// Found by comparing every recipe's idol with its item's crafting biome. The Scythe, Snow Shovel and Fishing Hat are
-    /// off too, but keep the game's cheap idols: they are tools more than gear.
+    /// Found by comparing every recipe's idol with its item's crafting biome: these are two or more tiers off, apart
+    /// from Splitnir, one tier below the rest of the Ashlands weapons. The Scythe, Snow Shovel and Fishing Hat are off
+    /// too, but keep the game's cheap idols: they are tools more than gear.
     ///
     /// One recipe has levels but no idol at all, so the Forge never lists its item: it gets the idol of the rest of
     /// its set.
@@ -25,6 +26,11 @@ namespace ValheimFOPReworked
             { "$item_fistweapon_gold", 7 }, // Nord Knucklechains: idol tier 2, crafted in the Deep North
             { "$item_axe_gold", 7 }, // Nord Axe: idol tier 4, crafted in the Deep North
             { "$item_axe_gold_frostfire", 7 }, // Frostfire Axe: idol tier 4, crafted in the Deep North
+            // Splitnir and its variants: idol tier 5, Ashlands weapons
+            { "$item_spear_splitner", 6 },
+            { "$item_spear_splitner_blood", 6 },
+            { "$item_spear_splitner_lightning", 6 },
+            { "$item_spear_splitner_nature", 6 },
         };
 
         // Item name -> the item whose idol requirement it gets a copy of

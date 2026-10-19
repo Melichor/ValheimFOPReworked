@@ -15,7 +15,7 @@ The first version.
 - Items go up to level 25. A refinement takes the new level divided by 5 idols, rounded up: 1 idol up to level 5, up to 5 idols for levels 21 to 25.
 - Items of earlier tiers need less experience, so refining an item with the creatures of its own biome takes about as long at every tier.
 - Idols can be crafted from a boss item, a trophy and 5 of the idol's material (Fine Wood for Wooden idols), at the best station of each tier.
-- A few items now take idols of the tier they belong to: the Nord Atgeir, Nord Knucklechains, Nord Axe and Frostfire Axe take Bloodgold idols, the Headdress of the Bear Bronze, and the Early Axes Wooden.
+- A few items now take idols of the tier they belong to: the Nord Atgeir, Nord Knucklechains, Nord Axe and Frostfire Axe take Bloodgold idols, Splitnir and its variants Flametal, the Headdress of the Bear Bronze, and the Early Axes Wooden.
 - The Helmet of the Protector can be refined, with Bloodgold Protection idols like the rest of its set. The game gives it no idol, so the Forge never listed it.
 - Experience shows in the item's tooltip, as a bar above the durability bar in the inventory, and at the Forge.
 - In multiplayer the server's settings apply to everyone, and editing the config file takes effect without a restart.

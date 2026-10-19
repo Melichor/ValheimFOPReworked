@@ -37,7 +37,7 @@ The experience an item needs grows with its level and with its tier. Experience 
 | 6 Ashlands | 1.6 | 12,800 | 188,122 | 1,886,520 |
 | 7 Deep North | 4 | 32,000 | 470,304 | 4,716,300 |
 
-An item's tier is the tier of the idol its recipe takes. In the game, a few recipes take idols two or more tiers away from where the item is crafted; most look copied from an earlier recipe. The mod gives these items the idols of their crafting biome, of the same kind (battle or protection), and the experience follows that tier too (`IdolFixes.cs`):
+An item's tier is the tier of the idol its recipe takes. In the game, a few recipes take idols of another tier than where the item is crafted; most look copied from an earlier recipe. The mod gives these items the idols of their crafting biome, of the same kind (battle or protection), and the experience follows that tier too (`IdolFixes.cs`):
 
 | Item | Idol tier in the game | With the mod |
 |---|---|---|
@@ -46,6 +46,7 @@ An item's tier is the tier of the idol its recipe takes. In the game, a few reci
 | Nord Axe, Frostfire Axe | 4 Plains | 7 Deep North |
 | Headdress of the Bear | 5 Mistlands | 1 Black Forest |
 | Early Axes | 2 Swamp | 0 Meadows |
+| Splitnir, and the Bleeding, Storming and Primal variants | 5 Mistlands | 6 Ashlands |
 
 The Scythe, Snow Shovel and Fishing Hat are off too (crafted in the Mountain, Ashlands and Deep North), but keep the game's Meadows and Black Forest idols: they are tools more than gear.
 
