@@ -6,7 +6,7 @@ Environment.props. Both are git-ignored. Running it again only redoes what is mi
 pinned version, or a game update for the decompiled code.
 
     ./setup.sh                      find Valheim through Steam, download BepInEx and ilspycmd, decompile the game code
-    ./setup.sh --game <path>        use this Valheim install (the folder that contains valheim_Data)
+    ./setup.sh --game <path>        use this Valheim install (the Steam Valheim folder)
     ./setup.sh --no-decompile       skip ilspycmd and the decompiled game code
     ./setup.sh --install-bepinex    also copy BepInEx into the game folder, which is needed to run the mod
 
@@ -15,8 +15,10 @@ variable. Python 3, standard library only.
 ilspycmd needs the .NET 10 SDK (the same one that builds the mod).
 """
 import argparse
+import datetime
 import hashlib
 import os
+import platform
 import re
 import shutil
 import stat
@@ -32,12 +34,17 @@ from xml.sax.saxutils import escape
 BEPINEX_VERSION = "5.4.2351"
 BEPINEX_SHA256 = "bce631497976a93977ceb08e166712e6c31d15244956f89f17df092a9b62e29f"
 BEPINEX_URL = "https://thunderstore.io/package/download/denikson/BepInExPack_Valheim/{version}/"
+# Apple Silicon needs BepInEx and UnityDoorstop builds that have not reached the regular BepInEx release yet.
+MACOS_BEPINEX_VERSION = "5.4.23.5-01fd4aa"
+MACOS_BEPINEX_SHA256 = "dfd66508691984320e173544036cefe0f80c7f4952fc715b3cb2704f41788824"
+MACOS_BEPINEX_URL = "https://thevalheim.wiki/downloads/BepInEx_macos_valheim_{version}.zip"
 ILSPYCMD_VERSION = "11.1.0.9782"
 # Game assemblies that are decompiled into deps/decompiled/ to read the game's code
 DECOMPILE = ["assembly_valheim", "assembly_utils", "assembly_guiutils"]
 VALHEIM_APP_ID = 892970
-# Where Steam keeps libraryfolders.vdf: native Linux, the Debian/Ubuntu package, Flatpak, Windows
+# Where Steam keeps libraryfolders.vdf: macOS, native Linux, the Debian/Ubuntu package, Flatpak, Windows
 STEAM_ROOTS = [
+    Path.home() / "Library" / "Application Support" / "Steam",
     Path.home() / ".steam" / "steam",
     Path.home() / ".local" / "share" / "Steam",
     Path.home() / ".var" / "app" / "com.valvesoftware.Steam" / ".local" / "share" / "Steam",
@@ -73,12 +80,47 @@ def sha256(path):
     return h.hexdigest()
 
 
+GAME_LAYOUTS = (
+    Path("valheim_Data") / "Managed",
+    Path("valheim.app") / "Contents" / "Resources" / "Data" / "Managed",
+)
+
+
+def game_layout(game):
+    """The path from a Valheim Steam folder to Managed, or None when this is not a game install."""
+    for relative in GAME_LAYOUTS:
+        if (game / relative / "assembly_valheim.dll").is_file():
+            return relative
+    return None
+
+
 def managed_dir(game):
-    return game / "valheim_Data" / "Managed"
+    """The installed game's Managed directory. Call is_game_dir first for untrusted paths."""
+    relative = game_layout(game)
+    return game / (relative if relative is not None else GAME_LAYOUTS[0])
+
+
+def normalize_game_dir(path):
+    """Return the Steam Valheim folder for a root, valheim.app, or its legacy Resources path."""
+    path = Path(path).expanduser().resolve()
+    candidates = [path]
+    if path.name == "valheim.app":
+        candidates.append(path.parent)
+    resources_tail = ("valheim.app", "Contents", "Resources")
+    if len(path.parts) >= 3 and path.parts[-3:] == resources_tail:
+        candidates.append(path.parents[2])
+    for candidate in candidates:
+        if game_layout(candidate) is not None:
+            return candidate
+    return path
 
 
 def is_game_dir(path):
-    return (managed_dir(path) / "assembly_valheim.dll").is_file()
+    return game_layout(path) is not None
+
+
+def is_macos_game(game):
+    return game_layout(game) == GAME_LAYOUTS[1]
 
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -129,10 +171,14 @@ def read_env_props():
 
 
 def write_env_props(game):
+    relative_managed = game_layout(game)
+    if relative_managed is None:
+        die(f"{game} is not a Valheim install")
     text = ("<Project>\n"
             "  <!-- Written by tools/setup.py: this machine's Valheim install. Not committed. -->\n"
             "  <PropertyGroup>\n"
             f"    <ValheimDir>{escape(str(game))}</ValheimDir>\n"
+            f"    <ValheimManagedDir>{escape(relative_managed.as_posix())}</ValheimManagedDir>\n"
             "  </PropertyGroup>\n"
             "</Project>\n")
     # Only rewrite when it changes, so MSBuild does not see a newer file and rebuild for nothing
@@ -142,12 +188,13 @@ def write_env_props(game):
 
 def resolve_game(given):
     if given:
-        game = Path(given).expanduser().resolve()
+        game = normalize_game_dir(given)
         if not is_game_dir(game):
-            die(f"{game} is not a Valheim install (valheim_Data/Managed/assembly_valheim.dll is missing)")
+            die(f"{game} is not a Valheim install (no supported Managed/assembly_valheim.dll was found)")
         return game
     saved = read_env_props()
     if saved:
+        saved = normalize_game_dir(saved)
         if is_game_dir(saved):
             return saved
         log(f"The Valheim path in Environment.props ({saved}) is not a Valheim install any more, looking again")
@@ -195,8 +242,95 @@ def download_bepinex():
     BEPINEX_STAMP.write_text(BEPINEX_VERSION + "\n")
 
 
+def copy_missing(source, destination):
+    """Merge source into destination without replacing a player's config or plugins."""
+    for src in sorted(source.rglob("*")):
+        rel = src.relative_to(source)
+        dst = destination / rel
+        if src.is_dir():
+            dst.mkdir(parents=True, exist_ok=True)
+        elif not dst.exists():
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src, dst)
+
+
+def migrate_legacy_macos_install(game):
+    """Move the old, incorrectly nested loader out of valheim.app without discarding player data."""
+    resources = game / "valheim.app" / "Contents" / "Resources"
+    legacy_bepinex = resources / "BepInEx"
+    if not legacy_bepinex.exists():
+        return
+
+    log("Migrating the old BepInEx installation out of valheim.app")
+    for name in ("config", "plugins"):
+        source = legacy_bepinex / name
+        if source.is_dir():
+            copy_missing(source, game / "BepInEx" / name)
+
+    stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    backup = game / f"BepInEx-macos-legacy-backup-{stamp}"
+    backup.mkdir()
+    # These are the files the old Linux-oriented pack put in Resources. Moving, rather than deleting, keeps recovery easy.
+    for name in ("BepInEx", "start_game_bepinex.sh", "start_server_bepinex.sh", "run_bepinex.sh",
+                 "doorstop_config.ini", "libdoorstop.dylib"):
+        source = resources / name
+        if source.exists() or source.is_symlink():
+            shutil.move(str(source), str(backup / name))
+    log(f"Legacy loader backed up to {backup}")
+
+
+def download_macos_bepinex():
+    downloads = DEPS / "downloads"
+    downloads.mkdir(parents=True, exist_ok=True)
+    zip_path = downloads / f"BepInEx_macos_valheim_{MACOS_BEPINEX_VERSION}.zip"
+    if not zip_path.is_file() or sha256(zip_path) != MACOS_BEPINEX_SHA256:
+        log(f"Downloading native macOS BepInEx {MACOS_BEPINEX_VERSION}")
+        part = zip_path.with_name(zip_path.name + ".part")
+        request = urllib.request.Request(MACOS_BEPINEX_URL.format(version=MACOS_BEPINEX_VERSION),
+                                         headers={"User-Agent": "ValheimFOPReworked-setup"})
+        with urllib.request.urlopen(request) as response, open(part, "wb") as f:
+            shutil.copyfileobj(response, f)
+        actual = sha256(part)
+        if actual != MACOS_BEPINEX_SHA256:
+            part.unlink()
+            die(f"the macOS BepInEx download has sha256 {actual}, expected {MACOS_BEPINEX_SHA256}")
+        part.replace(zip_path)
+    return zip_path
+
+
+def install_macos_bepinex(game):
+    if sys.platform != "darwin" or platform.machine().lower() not in ("arm64", "aarch64"):
+        die("native macOS BepInEx is supported only on an Apple Silicon Mac (arm64)")
+    migrate_legacy_macos_install(game)
+    zip_path = download_macos_bepinex()
+    temporary = DEPS / "BepInEx_macos_valheim.tmp"
+    shutil.rmtree(temporary, ignore_errors=True)
+    temporary.mkdir(parents=True)
+    with zipfile.ZipFile(zip_path) as z:
+        z.extractall(temporary)
+    log(f"Installing native macOS BepInEx {MACOS_BEPINEX_VERSION} into {game}")
+    # The archive is laid out for the Valheim folder. Preserve all existing config and plugins.
+    for src in sorted(temporary.rglob("*")):
+        rel = src.relative_to(temporary)
+        dst = game / rel
+        protected = len(rel.parts) >= 2 and rel.parts[:2] in (("BepInEx", "config"), ("BepInEx", "plugins"))
+        if src.is_dir() or (protected and dst.exists()):
+            continue
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, dst)
+    shutil.rmtree(temporary)
+    launcher = game / "run_bepinex.sh"
+    if not launcher.is_file():
+        die("the macOS BepInEx archive did not contain run_bepinex.sh")
+    launcher.chmod(launcher.stat().st_mode | stat.S_IXUSR)
+    (game / "BepInEx" / "plugins").mkdir(parents=True, exist_ok=True)
+
+
 def install_bepinex(game):
     """Copy the pack into the game folder, keeping the player's own BepInEx.cfg if there is one."""
+    if is_macos_game(game):
+        install_macos_bepinex(game)
+        return
     log(f"Installing BepInEx {BEPINEX_VERSION} into {game}")
     keep = Path("BepInEx") / "config" / "BepInEx.cfg"
     for src in sorted(BEPINEX_DIR.rglob("*")):
@@ -266,7 +400,7 @@ def main():
     ap = argparse.ArgumentParser(prog=SETUP.lstrip("./"), description=__doc__.split("\n\n")[0],
                                  epilog="Everything goes into deps/ and Environment.props, which git ignores.")
     ap.add_argument("--game", default=os.environ.get("VALHEIM_INSTALL"),
-                    help="the Valheim install, the folder that contains valheim_Data "
+                    help="the Valheim Steam folder (or valheim.app/Contents/Resources on macOS) "
                          "(default: $VALHEIM_INSTALL, then the last path used, then the Steam libraries)")
     ap.add_argument("--no-decompile", action="store_true", help="skip ilspycmd and the decompiled game code")
     ap.add_argument("--install-bepinex", action="store_true",
@@ -289,7 +423,9 @@ def main():
         print(f"BepInEx is not installed in the game yet. To run the mod: {SETUP} --install-bepinex")
     else:
         print(f"Build and copy the plugin into the game with:  {BUILD} --deploy")
-        if os.name != "nt":
+        if is_macos_game(game):
+            print(f'Steam launch options (Properties > General):  "{game / "run_bepinex.sh"}" %command%')
+        elif os.name != "nt":
             print("Steam launch options for the game (Properties > General):  ./start_game_bepinex.sh %command%")
 
 

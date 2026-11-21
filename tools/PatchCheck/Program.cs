@@ -15,15 +15,20 @@ const BindingFlags All = BindingFlags.Public | BindingFlags.NonPublic | BindingF
 string[] patchKinds = { "Prefix", "Postfix", "Finalizer", "Transpiler" };
 
 string root = FindRoot(AppContext.BaseDirectory);
-string game = args.Length > 0 ? args[0] : ReadValheimDir(Path.Combine(root, "Environment.props"));
+ValheimInstall? savedInstall = args.Length == 0 ? ReadValheimInstall(Path.Combine(root, "Environment.props")) : null;
+string game = args.Length > 0 ? args[0] : savedInstall!.Game;
 string plugin = args.Length > 1
     ? args[1]
     : Path.Combine(root, "src", "ValheimFOPReworked", "bin", "Debug", "netstandard2.1", "ValheimFOPReworked.dll");
-string managed = Path.Combine(game, "valheim_Data", "Managed");
+string managed = FindManagedDir(game, savedInstall?.ManagedRelative);
 string bepinex = Path.Combine(root, "deps", "BepInExPack_Valheim", "BepInEx", "core");
 if (!File.Exists(plugin))
 {
     return Fail($"{plugin} does not exist, build the plugin first");
+}
+if (!Directory.Exists(managed))
+{
+    return Fail($"could not find Valheim's Managed directory below {game}; run ./setup.sh again");
 }
 
 // Game assemblies first: where BepInEx ships a library the game also has, the game's copy is the one that runs
@@ -186,16 +191,43 @@ static string FindRoot(string start)
     throw new DirectoryNotFoundException("the repository root (ValheimFOPReworked.slnx) was not found");
 }
 
-static string ReadValheimDir(string props)
+static string FindManagedDir(string game, string? savedRelative)
 {
-    Match match = File.Exists(props)
-        ? Regex.Match(File.ReadAllText(props), "<ValheimDir>(.*?)</ValheimDir>")
-        : Match.Empty;
-    if (!match.Success)
+    if (!string.IsNullOrEmpty(savedRelative))
+    {
+        string saved = Path.Combine(game, savedRelative);
+        if (File.Exists(Path.Combine(saved, "assembly_valheim.dll")))
+        {
+            return saved;
+        }
+    }
+    foreach (string relative in new[]
+             {
+                 Path.Combine("valheim_Data", "Managed"),
+                 Path.Combine("valheim.app", "Contents", "Resources", "Data", "Managed"),
+             })
+    {
+        string candidate = Path.Combine(game, relative);
+        if (File.Exists(Path.Combine(candidate, "assembly_valheim.dll")))
+        {
+            return candidate;
+        }
+    }
+    return Path.Combine(game, "valheim_Data", "Managed");
+}
+
+static ValheimInstall ReadValheimInstall(string props)
+{
+    string text = File.Exists(props) ? File.ReadAllText(props) : "";
+    Match game = Regex.Match(text, "<ValheimDir>(.*?)</ValheimDir>");
+    if (!game.Success)
     {
         throw new FileNotFoundException("no ValheimDir in Environment.props, run ./setup.sh first");
     }
-    return System.Net.WebUtility.HtmlDecode(match.Groups[1].Value);
+    Match managed = Regex.Match(text, "<ValheimManagedDir>(.*?)</ValheimManagedDir>");
+    return new ValheimInstall(
+        System.Net.WebUtility.HtmlDecode(game.Groups[1].Value),
+        managed.Success ? System.Net.WebUtility.HtmlDecode(managed.Groups[1].Value) : null);
 }
 
 static int Fail(string message)
@@ -203,3 +235,5 @@ static int Fail(string message)
     Console.Error.WriteLine($"error: {message}");
     return 2;
 }
+
+record ValheimInstall(string Game, string? ManagedRelative);

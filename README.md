@@ -91,7 +91,7 @@ All experience earned by playing is also multiplied by the world's resource rate
 
 ### Multiplayer
 
-Everyone should have the mod, in the same version. A creature is simulated on one player's machine, and that machine works out the damage and tells the attacker. Without the mod there, hits on its creatures give no weapon experience.
+Everyone should have the mod, in the same version, including the server. A creature is simulated on one player's machine, and that machine works out the damage and tells the attacker. Without the mod there, hits on its creatures give no weapon experience. Players may use Windows, Linux or supported macOS Apple Silicon installations together.
 
 The server's settings apply to everyone: it sends them as it lets a player in, and again whenever they change, so editing the server's config file takes effect without a restart. A player's own config file applies again in single player and when they host.
 
@@ -126,7 +126,7 @@ To build the mod you need:
 
 Nothing else: no Visual Studio, Mono or Unity. Git is only needed to get the code.
 
-The scripts work on Linux and Windows. They are tested on Linux with the native Linux game; the Windows scripts (`setup.bat`, `build.bat`) do the same as the `.sh` ones but have not been run yet.
+The scripts work on Windows, Linux and macOS Apple Silicon. They are tested on Linux with the native Linux game; the Windows scripts (`setup.bat`, `build.bat`) do the same as the `.sh` ones but have not been run yet. Intel Macs are not supported by the native macOS loader.
 
 ## Setup
 
@@ -140,16 +140,17 @@ It finds Valheim in your Steam libraries and gets everything else the build need
 
 | What | Where |
 |---|---|
-| BepInExPack_Valheim (pinned version, checked against its sha256), for building and for installing into the game | `deps/BepInExPack_Valheim/` |
+| BepInExPack_Valheim (pinned version, checked against its sha256), for building | `deps/BepInExPack_Valheim/` |
+| Native BepInEx loader (macOS Apple Silicon only, pinned and checked against its sha256), for running the game | Downloaded to `deps/downloads/` and installed beside `valheim.app` |
 | ilspycmd, the ILSpy decompiler | `deps/tools/` |
 | The game's code (`assembly_valheim.dll`, `assembly_utils.dll`, `assembly_guiutils.dll`), decompiled to read and search | `deps/decompiled/` |
 | The path of your Valheim install | `Environment.props` |
 
 | Option | Meaning |
 |---|---|
-| `--game PATH` | Use this Valheim install (the folder that contains `valheim_Data`). `VALHEIM_INSTALL` works too. Without it, the last path used is kept, then the Steam libraries are searched. |
+| `--game PATH` | Use this Valheim Steam folder. It contains `valheim_Data` on Windows/Linux and `valheim.app` on macOS. On macOS the old `valheim.app/Contents/Resources` path is accepted and corrected automatically. `VALHEIM_INSTALL` works too. Without it, the last path used is kept, then the Steam libraries are searched. |
 | `--no-decompile` | Skip ilspycmd and the decompiled code. |
-| `--install-bepinex` | Also copy BepInEx into the game folder. This is needed to run the mod. An existing `BepInEx/config/BepInEx.cfg` is kept. |
+| `--install-bepinex` | Install BepInEx into the game folder. On macOS Apple Silicon this installs the native loader beside `valheim.app`; existing plugin and config files are kept. |
 
 `setup.sh` and `setup.bat` only run `tools/setup.py`, which you can also run directly with Python.
 
@@ -187,10 +188,10 @@ To release a new version, raise `Plugin.Version` (three numbers, like 0.2.0) and
 ## Running the mod
 
 1. Install BepInEx into the game, once: `./setup.sh --install-bepinex` (Windows: `setup.bat --install-bepinex`)
-2. On Linux only: in Steam, set the game's launch options (Properties > General) to `./start_game_bepinex.sh %command%`. On Windows, BepInEx starts with the game by itself.
+2. On Linux, set the game's Steam launch options (Properties > General) to `./start_game_bepinex.sh %command%`. On macOS Apple Silicon, use the full path printed by setup, in quotes, followed by `%command%`, for example `"/Users/YOUR_USER_NAME/Library/Application Support/Steam/steamapps/common/Valheim/run_bepinex.sh" %command%`. On Windows, BepInEx starts with the game by itself.
 3. Build and copy the plugin into `BepInEx/plugins/ValheimFOPReworked/`: `./build.sh --deploy` (Windows: `build.bat --deploy`)
 
-BepInEx writes its log to `BepInEx/LogOutput.log` in the game folder.
+BepInEx writes its log to `BepInEx/LogOutput.log` in the game folder. On macOS, a successful launch shows "You are playing a modded version of Valheim" in the main menu; the log must also list `ValheimFOPReworked` as loaded.
 
 ## Checking the patches
 
