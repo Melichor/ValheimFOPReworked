@@ -13,7 +13,10 @@
     <!-- Needed to use the members the publicizer makes public -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDependencyFile>false</GenerateDependencyFile>
-    <ManagedDir>$(ValheimDir)/valheim_Data/Managed/</ManagedDir>
+    <!-- ValheimManagedDir is written by setup.py: valheim_Data/Managed on Windows/Linux and
+         valheim.app/Contents/Resources/Data/Managed on macOS. -->
+    <ManagedDir Condition="'$(ValheimManagedDir)' != ''">$(ValheimDir)/$(ValheimManagedDir)/</ManagedDir>
+    <ManagedDir Condition="'$(ValheimManagedDir)' == ''">$(ValheimDir)/valheim_Data/Managed/</ManagedDir>
     <BepInExCoreDir>$(MSBuildThisFileDirectory)../../deps/BepInExPack_Valheim/BepInEx/core/</BepInExCoreDir>
     <PluginDeployDir>$(ValheimDir)/BepInEx/plugins/$(AssemblyName)/</PluginDeployDir>
   </PropertyGroup>
