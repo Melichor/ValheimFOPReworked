@@ -193,6 +193,17 @@ To release a new version, raise `Plugin.Version` (three numbers, like 0.2.0) and
 
 BepInEx writes its log to `BepInEx/LogOutput.log` in the game folder. On macOS, a successful launch shows "You are playing a modded version of Valheim" in the main menu; the log must also list `ValheimFOPReworked` as loaded.
 
+### Windows dedicated server
+
+An independent Steam **Valheim Dedicated Server** is a separate installation, so it needs its own BepInEx and copy of the mod. Do not run `setup.bat --install-bepinex` in the server folder: that command expects the client game's `valheim_Data` layout.
+
+1. Stop the server. In Steam, open **Valheim Dedicated Server** > **Manage** > **Browse local files**. Its folder contains `valheim_server.exe` (usually `steamapps/common/Valheim dedicated server/`).
+2. Download the [BepInExPack_Valheim version pinned by this project](https://thunderstore.io/package/download/denikson/BepInExPack_Valheim/5.4.2351/). Open the extracted `BepInExPack_Valheim` folder and copy its **contents** into the server folder, beside `valheim_server.exe`—not the enclosing folder itself. This installs `BepInEx/`, `winhttp.dll`, `doorstop_config.ini` and `doorstop_libs/`.
+3. Copy the built `ValheimFOPReworked.dll` into `BepInEx/plugins/ValheimFOPReworked/` in the server folder. You can use `src/ValheimFOPReworked/bin/Release/netstandard2.1/ValheimFOPReworked.dll` after a build, or the DLL in the `plugins/` directory of the zip made by `./build.sh --package`.
+4. Start the server using its usual `.bat` file; no launch-option or server-argument change is required. On Windows, BepInEx is loaded by the `winhttp.dll` placed next to `valheim_server.exe`.
+
+After its first start, verify that `BepInEx/LogOutput.log` lists `ValheimFOPReworked` as loaded. The server creates `BepInEx/config/melichor.ValheimFOPReworked.cfg`; its settings are authoritative and are sent to connected players. Clients and the server must run the same mod version. If Windows shows an **Unblock** checkbox in the properties of `winhttp.dll` after downloading the archive, select it before starting the server.
+
 ## Checking the patches
 
 Harmony only finds a patch that no longer fits the game (a renamed method or argument) when the game loads the plugin. `tools/PatchCheck` finds it without starting the game. It reads the built plugin and the installed game as metadata and checks every patch against the method it patches. `./build.sh` runs it after every build, so after a game update a build is enough. On its own:
